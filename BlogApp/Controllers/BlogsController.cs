@@ -23,7 +23,7 @@ namespace BlogApp.API.Controllers
         }
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]BlogCreateDto dto)
+        public async Task<IActionResult> Post([FromForm]BlogCreateDto dto)
         {
             try 
             {
@@ -41,7 +41,7 @@ namespace BlogApp.API.Controllers
         }
         [Authorize]
         [HttpPost("[action]/{id}")]
-        public async Task<IActionResult> Comment(int id,CommentCreateDto dto )
+        public async Task<IActionResult> Comment(int id,[FromForm]CommentCreateDto dto )
         {
             await _commentService.CreateAsync(id ,dto);
             return Accepted();

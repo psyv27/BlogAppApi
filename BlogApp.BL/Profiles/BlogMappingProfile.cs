@@ -15,7 +15,9 @@ namespace BlogApp.BL.Profiles
         {
             CreateMap<Blog,BlogDetailDto>();
             CreateMap<Blog, BlogListItemDto>();
-            CreateMap<BlogCreateDto,Blog>();
+            CreateMap<BlogCreateDto,Blog>()
+                .ForMember(dest => dest.CoverImageUrl, opt => opt.Condition(src => !string.IsNullOrEmpty(src.CoverImageUrl)))
+                .ForMember(dest => dest.VideoUrl, opt => opt.Condition(src => !string.IsNullOrEmpty(src.VideoUrl)));
             CreateMap<BlogUpdateDto,Blog>();
             CreateMap<BlogCategory,BlogCategoryDto>().ReverseMap();
         }

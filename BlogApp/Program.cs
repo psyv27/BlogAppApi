@@ -114,6 +114,7 @@ namespace BlogApp
                 c.ConfigObject.AdditionalItems.Add("persistAuthorization", "true");
             });
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
 

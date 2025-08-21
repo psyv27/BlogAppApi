@@ -11,6 +11,9 @@ namespace BlogApp.BL.Dtos.CommentDtos
     {
         public int Id { get; set; }
         public string Text { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? VideoUrl { get; set; }
+        public DateTime CreatedDate { get; set; }
         public AuthorDto AppUser { get; set; }
         public IEnumerable<CommentListItemDto> Children { get; set; }
     }
