@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace BlogApp.BL.Services.Implements
 {
-    public class BlogService(IBlogRepository _repo,IMapper _mapper ,IHttpContextAccessor _context,ICategoryRepository _categoryRepo,UserManager<AppUser> _userManager) : IBlogService
+    public class BlogService(IBlogRepository _repo,IMapper _mapper ,IHttpContextAccessor _context,ICategoryRepository _categoryRepo,UserManager<AppUser> _userManager, IFileService _fileService) : IBlogService
     {
         readonly string? userId = _context.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         public async Task CreateAsync(BlogCreateDto dto)
@@ -41,6 +41,18 @@ namespace BlogApp.BL.Services.Implements
             Blog blog = _mapper.Map<Blog>(dto);
             blog.AppUserId = userId;
             blog.BlogCategories = blogCats;
+            
+            // Handle file uploads
+            if (dto.CoverImageFile != null)
+            {
+                blog.CoverImageUrl = await _fileService.UploadImageAsync(dto.CoverImageFile);
+            }
+            
+            if (dto.VideoFile != null)
+            {
+                blog.VideoUrl = await _fileService.UploadVideoAsync(dto.VideoFile);
+            }
+            
             await _repo.CreateAsync(blog);
             await _repo.SaveAsync();
         }

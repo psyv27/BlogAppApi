@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace BlogApp.BL.Services.Implements
 {
-    public class CommentService(ICommentRepository _repo, IMapper _mapper, IHttpContextAccessor _context, IBlogRepository _blogRepo, UserManager<AppUser> _userManager) : ICommentService
+    public class CommentService(ICommentRepository _repo, IMapper _mapper, IHttpContextAccessor _context, IBlogRepository _blogRepo, UserManager<AppUser> _userManager, IFileService _fileService) : ICommentService
     {
         readonly string? userId = _context.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     
@@ -31,6 +31,17 @@ namespace BlogApp.BL.Services.Implements
             var comment = _mapper.Map<Comment>(dto);
             comment.AppUserId = userId;
             comment.BlogId = id;
+            
+            // Handle file uploads
+            if (dto.ImageFile != null)
+            {
+                comment.ImageUrl = await _fileService.UploadImageAsync(dto.ImageFile);
+            }
+            
+            if (dto.VideoFile != null)
+            {
+                comment.VideoUrl = await _fileService.UploadVideoAsync(dto.VideoFile);
+            }
             
             comment.CreatedDate = DateTime.UtcNow;
             await _repo.CreateAsync(comment);

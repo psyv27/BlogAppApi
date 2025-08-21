@@ -24,6 +24,7 @@ namespace BlogApp.BL
             services.AddHttpContextAccessor(); 
             services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<IFileService, FileService>();
             //services.AddScoped<IBlogLikeRepository, BlogLikeRepository>();
         }
     }

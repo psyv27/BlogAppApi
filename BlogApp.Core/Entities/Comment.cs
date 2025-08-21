@@ -9,6 +9,8 @@ namespace BlogApp.Core.Entities
     public class Comment : BaseEntitty
     {
         public string Text { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? VideoUrl { get; set; }
         public DateTime CreatedDate { get; set; }
         public int BlogId { get; set; }
         public Blog Blog { get; set; }

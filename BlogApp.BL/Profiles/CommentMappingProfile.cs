@@ -17,7 +17,9 @@ namespace BlogApp.BL.Profiles
             CreateMap<Comment, CommentListItemDto>().ReverseMap();
             CreateMap<Comment, CommentDetailDto>().ReverseMap();
             CreateMap<CommentChildDto, Comment>().ReverseMap();
-            CreateMap<CommentCreateDto, Comment>().ReverseMap();
+            CreateMap<CommentCreateDto, Comment>()
+                .ForMember(dest => dest.ImageUrl, opt => opt.Condition(src => !string.IsNullOrEmpty(src.ImageUrl)))
+                .ForMember(dest => dest.VideoUrl, opt => opt.Condition(src => !string.IsNullOrEmpty(src.VideoUrl)));
             CreateMap<CommentUpdateDto, Comment>().ReverseMap();
         }
     }
