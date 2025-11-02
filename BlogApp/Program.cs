@@ -2,6 +2,7 @@
 using BlogApp.API.Helpers;
 using BlogApp.BL;
 using BlogApp.BL.Profiles;
+using BlogApp.BL.Services.Implements;
 using BlogApp.BL.Services.Interfaces;
 using BlogApp.Core.Entities;
 using BlogApp.DAL;
@@ -30,6 +31,19 @@ namespace BlogApp
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 ); ;
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",  
+                    policy =>
+                    {
+                        // "null" - нужен, если вы открываете index.html как файл (file:///)
+                        // "http://127.0.0.1:5500" - это адрес вашего Live Server в VS Code
+                        policy.WithOrigins("http://127.0.0.1:5500", "null")
+                              .AllowAnyHeader()   // Разрешить любые заголовки (включая Authorization)
+                              .AllowAnyMethod();  // Разрешить любые методы (GET, POST, PUT, DELETE)
+                    });
+            });
             builder.Services.AddFluentValidation(opt=>
                 {
                     opt.RegisterValidatorsFromAssemblyContaining<CategoryService>();
@@ -123,6 +137,7 @@ namespace BlogApp
             });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
 

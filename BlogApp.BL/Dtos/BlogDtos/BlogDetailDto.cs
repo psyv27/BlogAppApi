@@ -1,4 +1,5 @@
 ﻿using BlogApp.BL.Dtos.UserDtos;
+using BlogApp.BL.Dtos.CommentDtos; 
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,8 @@ namespace BlogApp.BL.Dtos.BlogDtos
         public DateTime CreatedTime { get; set; }
         public AuthorDto AppUser { get; set; }
         public IEnumerable<BlogCategoryDto> BlogCategories { get; set; }
+
+        // 2. ⬇️ ДОБАВЬТЕ ЭТУ СТРОКУ ⬇️
+        public IEnumerable<CommentListItemDto> Comments { get; set; }
     }
 }

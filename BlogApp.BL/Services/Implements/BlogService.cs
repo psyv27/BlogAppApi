@@ -59,34 +59,34 @@ namespace BlogApp.BL.Services.Implements
 
         public async Task<IEnumerable<BlogListItemDto>> GetAllAsync()
         {
-            //var dto = new List<BlogListItemDto>();
-            //var entity = _repo.GetAll("AppUser", "BlogCategories", "BlogCategories.Category");
-            //List<Category> categories = new();
-
-            //foreach (var item in entity)
-            //{
-            //    categories.Clear();
-            //    foreach (var category in item.BlogCategories)
-            //    {
-            //        categories.Add(category.Category);
-            //    }
-            //    var dtoItem = _mapper.Map<BlogListItemDto>(item);
-            //    dtoItem.Categories = _mapper.Map<IEnumerable<CategoryListItemDto>>(categories);
-
-            //    dto.Add(dtoItem);
-            //}
-            //return dto;
+            //
             var entity = _repo.GetAll("AppUser", "BlogCategories", "BlogCategories.Category","Comments" ,"Comments.Children","Comments.AppUser");
             return _mapper.Map<IEnumerable<BlogListItemDto>>(entity);
         }
 
+      
+
         public async Task<BlogDetailDto> GetByIdAsync(int id)
         {
-           var entity = await _repo.FindByIdAsync(id);
-           if (entity == null) throw new NotFoundException<Blog>();
+           
+            var entity = await _repo.GetAll(
+                    "AppUser",                  
+                    "BlogCategories.Category",  
+                    "Comments",                 
+                    "Comments.AppUser",         
+                    "Comments.Children"         
+                )
+            
+                .SingleOrDefaultAsync(b => b.Id == id);
+           
+
+            if (entity == null) throw new NotFoundException<Blog>();
+
             entity.ViewerCount++;
-           await _repo.SaveAsync();
-           return _mapper.Map<BlogDetailDto>(entity);
+            await _repo.SaveAsync();
+
+           
+            return _mapper.Map<BlogDetailDto>(entity);
         }
 
         public async Task RemoveAsync(int id)
