@@ -1,8 +1,7 @@
-
 using BlogApp.API.Helpers;
+using BlogApp.API.Hubs;
 using BlogApp.BL;
 using BlogApp.BL.Profiles;
-using BlogApp.BL.Services.Implements;
 using BlogApp.BL.Services.Interfaces;
 using BlogApp.Core.Entities;
 using BlogApp.DAL;
@@ -31,19 +30,26 @@ namespace BlogApp
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 ); ;
+<<<<<<< HEAD:BlogApp.Api/Program.cs
 
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend",  
                     policy =>
                     {
-                        // "null" - нужен, если вы открываете index.html как файл (file:///)
-                        // "http://127.0.0.1:5500" - это адрес вашего Live Server в VS Code
-                        policy.WithOrigins("http://127.0.0.1:5500", "null")
-                              .AllowAnyHeader()   // Разрешить любые заголовки (включая Authorization)
-                              .AllowAnyMethod();  // Разрешить любые методы (GET, POST, PUT, DELETE)
+                        policy.WithOrigins(
+                            "http://127.0.0.1:5500",    // Live Server VS Code
+                            "null",                      // file:/// protocol
+                            "http://localhost:5173",     // Vite default port
+                            "https://localhost:5173"     // Vite HTTPS
+                        )
+                              .AllowAnyHeader()          // Allow any headers (including Authorization)
+                              .AllowAnyMethod()           // Allow any methods (GET, POST, PUT, DELETE)
+                              .AllowCredentials();        // Allow credentials for authenticated requests
                     });
             });
+=======
+>>>>>>> parent of 77b7f0a (update):BlogApp/Program.cs
             builder.Services.AddFluentValidation(opt=>
                 {
                     opt.RegisterValidatorsFromAssemblyContaining<CategoryService>();
@@ -77,6 +83,14 @@ namespace BlogApp
                        new string[]{}
                    }
                });
+               
+               // Include XML comments from controller methods
+               var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+               var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+               if (File.Exists(xmlPath))
+               {
+                   opt.IncludeXmlComments(xmlPath);
+               }
                });
             builder.Services.AddDbContext<AppDbContext>(opt=> {
                 opt.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
@@ -89,6 +103,7 @@ namespace BlogApp
 
             builder.Services.AddRepositories();
             builder.Services.AddServices();
+            builder.Services.AddSignalR();
 
            builder.Services.AddAuthentication(
                 opt =>
@@ -137,13 +152,13 @@ namespace BlogApp
             });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseCustomExceptionHandler();
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chatHub");
 
             app.Run();
         }

@@ -17,6 +17,9 @@ namespace BlogApp.DAL
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IBlogRepository, BlogRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IBlogLikeRepository, BlogLikeRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IStoryRepository, StoryRepository>();
 
         }
     }
