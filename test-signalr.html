@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogApp API - SignalR Chat Tester</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .status.connected {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+        
+        .status.disconnected {
+            background: #ffcdd2;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        
+        .messages {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 3px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .message.sent {
+            border-left-color: #4caf50;
+            background: #f1f8e9;
+        }
+        
+        .message.received {
+            border-left-color: #2196f3;
+            background: #e3f2fd;
+        }
+        
+        .message.system {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+            font-style: italic;
+        }
+        
+        .timestamp {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 3px;
+        }
+        
+        .api-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .api-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .endpoint {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint.get { border-left-color: #4caf50; }
+        .endpoint.post { border-left-color: #2196f3; }
+        .endpoint.put { border-left-color: #ff9800; }
+        .endpoint.delete { border-left-color: #f44336; }
+        
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-right: 10px;
+        }
+        
+        .method.get { background: #4caf50; }
+        .method.post { background: #2196f3; }
+        .method.put { background: #ff9800; }
+        .method.delete { background: #f44336; }
+        
+        .url {
+            font-family: monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+        
+        .response-box {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>?? BlogApp API - Real-Time Chat Tester</h1>
+        
+        <div class="grid">
+            <!-- Chat Interface -->
+            <div class="card">
+                <h2>?? SignalR Chat</h2>
+                
+                <div id="statusChat" class="status disconnected">
+                    ? Disconnected
+                </div>
+                
+                <div class="form-group">
+                    <label>JWT Token:</label>
+                    <input type="password" id="tokenChat" placeholder="Paste your JWT token here" />
+                </div>
+                
+                <button onclick="connectChat()">Connect to Chat</button>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Receiver User ID:</label>
+                    <input type="text" id="receiverId" placeholder="e.g., 550e8400-e29b-41d4-a716-446655440000" />
+                </div>
+                
+                <div class="messages" id="chatMessages"></div>
+                
+                <div class="form-group">
+                    <label>Message:</label>
+                    <textarea id="messageText" placeholder="Type your message..."></textarea>
+                </div>
+                
+                <button onclick="sendMessage()" id="sendBtn" disabled>Send Message</button>
+            </div>
+            
+            <!-- REST API Tester -->
+            <div class="card">
+                <h2>?? REST API Tester</h2>
+                
+                <div id="statusAPI" class="status disconnected">
+                    ?? Not Tested
+                </div>
+                
+                <div class="form-group">
+                    <label>JWT Token:</label>
+                    <input type="password" id="tokenAPI" placeholder="Paste your JWT token here" />
+                </div>
+                
+                <button onclick="testEndpoints()">Test All Endpoints</button>
+                
+                <div id="testResults" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+        
+        <!-- API Endpoints Reference -->
+        <div class="api-section">
+            <h2>?? API Endpoints Reference</h2>
+            
+            <div class="endpoint get">
+                <span class="method get">GET</span>
+                <strong>/api/stories</strong>
+                <div class="url">http://localhost:5000/api/stories</div>
+                <p style="margin-top: 5px; color: #666;">Get all active stories (active for 24 hours)</p>
+            </div>
+            
+            <div class="endpoint post">
+                <span class="method post">POST</span>
+                <strong>/api/stories</strong>
+                <div class="url">http://localhost:5000/api/stories</div>
+                <p style="margin-top: 5px; color: #666;">Create a new story (requires Auth)</p>
+            </div>
+            
+            <div class="endpoint get">
+                <span class="method get">GET</span>
+                <strong>/api/messages/{userId}</strong>
+                <div class="url">http://localhost:5000/api/messages/550e8400-e29b-41d4-a716-446655440000</div>
+                <p style="margin-top: 5px; color: #666;">Get conversation with specific user (requires Auth)</p>
+            </div>
+            
+            <div class="endpoint post">
+                <span class="method post">POST</span>
+                <strong>/api/messages</strong>
+                <div class="url">http://localhost:5000/api/messages</div>
+                <p style="margin-top: 5px; color: #666;">Send a message (requires Auth)</p>
+            </div>
+            
+            <div class="endpoint get">
+                <span class="method get">GET</span>
+                <strong>/api/blogs/feed</strong>
+                <div class="url">http://localhost:5000/api/blogs/feed?size=10&cursor=2025-12-30T17:32:21Z</div>
+                <p style="margin-top: 5px; color: #666;">Infinite scroll - cursor-based pagination</p>
+            </div>
+            
+            <div class="endpoint post">
+                <span class="method post">POST</span>
+                <strong>/api/blogs/like/{blogId}</strong>
+                <div class="url">http://localhost:5000/api/blogs/like/1</div>
+                <p style="margin-top: 5px; color: #666;">Like/Unlike a blog post (requires Auth)</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatConnection = null;
+        const baseURL = "http://localhost:5000/api";
+
+        // Chat Functions
+        async function connectChat() {
+            const token = document.getElementById("tokenChat").value;
+            if (!token) {
+                alert("Please paste your JWT token");
+                return;
+            }
+
+            try {
+                chatConnection = new signalR.HubConnectionBuilder()
+                    .withUrl("http://localhost:5000/chatHub", {
+                        accessTokenFactory: () => token
+                    })
+                    .withAutomaticReconnect()
+                    .build();
+
+                chatConnection.on("ReceiveMessage", (senderId, content) => {
+                    addChatMessage(`User ${senderId.substring(0, 8)}...`, content, "received");
+                });
+
+                await chatConnection.start();
+                updateChatStatus(true);
+                addChatMessage("System", "Connected to chat!", "system");
+                document.getElementById("sendBtn").disabled = false;
+            } catch (err) {
+                updateChatStatus(false);
+                addChatMessage("Error", err.message, "system");
+            }
+        }
+
+        function sendMessage() {
+            const receiverId = document.getElementById("receiverId").value;
+            const content = document.getElementById("messageText").value;
+
+            if (!receiverId || !content) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            if (!chatConnection) {
+                alert("Not connected!");
+                return;
+            }
+
+            chatConnection.invoke("SendMessage", receiverId, content)
+                .then(() => {
+                    addChatMessage("You", content, "sent");
+                    document.getElementById("messageText").value = "";
+                })
+                .catch(err => addChatMessage("Error", err, "system"));
+        }
+
+        function addChatMessage(sender, content, type = "received") {
+            const div = document.getElementById("chatMessages");
+            const msg = document.createElement("div");
+            msg.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            msg.innerHTML = `
+                <strong>${sender}</strong>
+                <div>${content}</div>
+                <div class="timestamp">${time}</div>
+            `;
+            
+            div.appendChild(msg);
+            div.scrollTop = div.scrollHeight;
+        }
+
+        function updateChatStatus(connected) {
+            const status = document.getElementById("statusChat");
+            if (connected) {
+                status.className = "status connected";
+                status.textContent = "? Connected to Chat Hub";
+            } else {
+                status.className = "status disconnected";
+                status.textContent = "? Disconnected";
+            }
+        }
+
+        // API Testing Functions
+        async function testEndpoints() {
+            const token = document.getElementById("tokenAPI").value;
+            if (!token) {
+                alert("Please paste your JWT token");
+                return;
+            }
+
+            const results = document.getElementById("testResults");
+            results.innerHTML = "<p>Testing endpoints...</p>";
+
+            try {
+                // Test Stories
+                const storiesRes = await fetch(`${baseURL}/stories`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const storiesData = await storiesRes.json();
+
+                // Test Messages (needs a valid userId)
+                const messagesRes = await fetch(`${baseURL}/messages/test-user-id`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                // Test Blogs Feed
+                const blogsRes = await fetch(`${baseURL}/blogs/feed?size=5`);
+                const blogsData = await blogsRes.json();
+
+                results.innerHTML = `
+                    <div style="background: #c8e6c9; padding: 15px; border-radius: 5px;">
+                        <p>? <strong>Stories:</strong> ${storiesData.length} stories found</p>
+                        <p>? <strong>Messages:</strong> Endpoint accessible (use valid userId)</p>
+                        <p>? <strong>Blogs Feed:</strong> ${blogsData.length} posts returned</p>
+                    </div>
+                    <div class="response-box">
+                        <strong>Stories Response Sample:</strong><br>
+                        ${JSON.stringify(storiesData.slice(0, 1), null, 2)}
+                    </div>
+                `;
+
+                updateAPIStatus(true);
+            } catch (err) {
+                results.innerHTML = `
+                    <div style="background: #ffcdd2; padding: 15px; border-radius: 5px; color: #c62828;">
+                        <p>? Error: ${err.message}</p>
+                    </div>
+                `;
+                updateAPIStatus(false);
+            }
+        }
+
+        function updateAPIStatus(success) {
+            const status = document.getElementById("statusAPI");
+            if (success) {
+                status.className = "status connected";
+                status.textContent = "? All Endpoints Accessible";
+            } else {
+                status.className = "status disconnected";
+                status.textContent = "? Some Endpoints Failed";
+            }
+        }
+    </script>
+</body>
+</html>

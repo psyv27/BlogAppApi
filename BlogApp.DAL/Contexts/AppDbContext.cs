@@ -20,6 +20,9 @@ namespace BlogApp.DAL.Contexts
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<BlogCategory> BlogCategories { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<BlogLike> BlogLikes { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<Story> Stories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
